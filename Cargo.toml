@@ -9,6 +9,7 @@ documentation = "https://docs.rs/syn-select/0.1.0"
 description = """
 A lightweight selector engine for searching Rust source code.
 """
+readme = "README.md"
 
 [dependencies]
 syn = { version = "0.15.26", features = ["full", "visit", "extra-traits"] }
