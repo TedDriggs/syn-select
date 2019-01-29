@@ -1,5 +1,20 @@
-//! Library to get a specific element by path. For more information on the
+//! Library to get a specific element by path in Rust code.
 //!
+//! # Usage
+//! ```rust,edition2018
+//! let file: syn::File = syn::parse_str(
+//!     r#"
+//!     mod a {
+//!         mod b {
+//!             trait C {
+//!                 fn d(self) {}
+//!                 fn f() {}
+//!             }
+//!         }
+//!     }"#).unwrap();
+//! let results = syn_select::select("a::b::C::d", &file).unwrap();
+//! assert_eq!(results.len(), 1);
+//! ```
 
 use syn::Item;
 
