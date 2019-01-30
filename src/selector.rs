@@ -7,14 +7,28 @@ use std::str::FromStr;
 use syn::{Ident, Item};
 
 /// The path provided by the user to search for.
-/// This is stricter than a `syn::Path`, as we don't allow generics or UFCS constructs.
-pub(crate) struct Selector {
+///
+/// Not all Rust paths are valid selectors; UFCS and generics are not supported.
+#[derive(Clone)]
+pub struct Selector {
     segments: Vec<Ident>,
 }
 
 impl Selector {
+    /// Create a new `Selector` by parsing the passed-in string.
+    ///
+    /// # Usage
+    /// ```rust,edition2018
+    /// use syn_select::Selector;
+    /// let selector = Selector::try_from("hello::world").unwrap();
+    /// assert_eq!(format!("{:?}", selector), "hello::world".to_owned());
+    /// ```
+    pub fn try_from(s: impl AsRef<str>) -> Result<Self, Error> {
+        s.as_ref().parse()
+    }
+
     /// Use this selector to search a file, returning the list of items that match the selector.
-    pub fn search(&self, file: &syn::File) -> Vec<Item> {
+    pub fn apply_to(&self, file: &syn::File) -> Vec<Item> {
         let mut search = Search::new(self);
         search.search_file(file);
         search.results

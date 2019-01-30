@@ -23,7 +23,7 @@ mod search;
 mod selector;
 
 pub use error::Error;
-pub(crate) use selector::Selector;
+pub use selector::Selector;
 
 /// Parse a path, then search a file for all results that exactly match the specified
 /// path.
@@ -34,7 +34,7 @@ pub(crate) use selector::Selector;
 /// 1. There is a module and a function of the same name
 /// 2. The same path is declared multiple times, differing by config flags
 pub fn select(path: &str, file: &syn::File) -> Result<Vec<Item>, Error> {
-    Ok(path.parse::<Selector>()?.search(file))
+    Ok(Selector::try_from(path)?.apply_to(file))
 }
 
 #[cfg(test)]
