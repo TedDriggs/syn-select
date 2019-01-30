@@ -67,7 +67,7 @@ impl FromStr for Selector {
         for segment in input.split("::") {
             match syn::parse_str(segment) {
                 Ok(ident) => segments.push(ident),
-                Err(_) => return Err(Error::invalid_path()),
+                Err(_) => return Err(Error::invalid_segment(segment.into())),
             }
         }
 

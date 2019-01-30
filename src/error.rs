@@ -19,8 +19,8 @@ impl Error {
 
     /// Create an error indicating the caller provided a non-empty string that
     /// couldn't be parsed to a searchable path.
-    pub(crate) fn invalid_path() -> Self {
-        Error::new(ErrorKind::InvalidPath)
+    pub(crate) fn invalid_segment(segment: String) -> Self {
+        Error::new(ErrorKind::InvalidSegment(segment))
     }
 }
 
@@ -42,8 +42,11 @@ impl fmt::Display for Error {
 
 #[derive(Debug)]
 enum ErrorKind {
+    /// The selector parser was passed an empty string.
     EmptyPath,
-    InvalidPath,
+    /// The selector parser was passed a non-empty string that had
+    /// an invalid part after being split by the path separator.
+    InvalidSegment(String),
 }
 
 impl std::error::Error for ErrorKind {
@@ -54,13 +57,21 @@ impl std::error::Error for ErrorKind {
     fn description(&self) -> &str {
         match self {
             ErrorKind::EmptyPath => "Empty path",
-            ErrorKind::InvalidPath => "Invalid path",
+            ErrorKind::InvalidSegment(_) => "Invalid path segment",
         }
     }
 }
 
 impl fmt::Display for ErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
+        match self {
+            ErrorKind::EmptyPath => self.description().fmt(f),
+            ErrorKind::InvalidSegment(segment) => write!(
+                f,
+                "{}: `{}` is not an identifier",
+                self.description(),
+                segment
+            ),
+        }
     }
 }
