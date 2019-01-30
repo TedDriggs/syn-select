@@ -11,7 +11,7 @@ use syn::{Ident, Item};
 /// Not all Rust paths are valid selectors; UFCS and generics are not supported.
 #[derive(Clone)]
 pub struct Selector {
-    segments: Vec<Ident>,
+    segments: Vec<SelectorSegment>,
 }
 
 impl Selector {
@@ -34,7 +34,7 @@ impl Selector {
         search.results
     }
 
-    pub(crate) fn part(&self, index: usize) -> &Ident {
+    pub(crate) fn part(&self, index: usize) -> &SelectorSegment {
         &self.segments[index]
     }
 
@@ -65,12 +65,53 @@ impl FromStr for Selector {
         }
 
         for segment in input.split("::") {
-            match syn::parse_str(segment) {
-                Ok(ident) => segments.push(ident),
+            match segment.parse() {
+                Ok(seg) => segments.push(seg),
                 Err(_) => return Err(Error::invalid_segment(segment.into())),
             }
         }
 
         Ok(Selector { segments })
+    }
+}
+
+/// One segment of a selector path
+#[derive(Clone)]
+pub(crate) enum SelectorSegment {
+    /// A specific ident that must be exactly equal to match.
+    Ident(Ident),
+    /// A wildcard that matches any ident.
+    Wildcard,
+}
+
+impl FromStr for SelectorSegment {
+    type Err = Error;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        if input == "_" {
+            return Ok(SelectorSegment::Wildcard);
+        }
+
+        syn::parse_str(input)
+            .map(SelectorSegment::Ident)
+            .map_err(|_| Error::invalid_segment(input.into()))
+    }
+}
+
+impl PartialEq<Ident> for SelectorSegment {
+    fn eq(&self, other: &Ident) -> bool {
+        match self {
+            SelectorSegment::Wildcard => true,
+            SelectorSegment::Ident(ident) => ident == other,
+        }
+    }
+}
+
+impl fmt::Display for SelectorSegment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            SelectorSegment::Wildcard => "_".fmt(f),
+            SelectorSegment::Ident(ident) => ident.fmt(f),
+        }
     }
 }

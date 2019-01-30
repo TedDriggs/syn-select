@@ -51,7 +51,9 @@ mod tests {
                     fn d() {
                         struct E;
                     }
-                    fn f(self) {}
+                    fn f(self) {
+                        struct E;
+                    }
                 }
             }
             fn b() {}
@@ -135,5 +137,11 @@ mod tests {
         } else {
             panic!("First result should be struct");
         }
+    }
+
+    #[test]
+    fn example_6() {
+        let result = search_sample("a::b::C::_::E");
+        assert_eq!(result.len(), 2);
     }
 }

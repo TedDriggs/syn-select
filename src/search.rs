@@ -1,4 +1,5 @@
 use crate::Selector;
+use crate::selector::SelectorSegment;
 use syn::visit::Visit;
 use syn::{
     self, Attribute, Ident, Item, ItemConst, ItemFn, ItemTrait, ItemType, Stmt, TraitItem,
@@ -10,9 +11,9 @@ trait Name {
     fn name(&self) -> Option<&Ident>;
 
     /// Check if the item is named and matches the sought-after ident.
-    fn is_named(&self, ident: &Ident) -> bool {
+    fn is_named(&self, ident: &impl PartialEq<Ident>) -> bool {
         if let Some(own) = self.name() {
-            own == ident
+            ident == own
         } else {
             false
         }
@@ -81,7 +82,7 @@ impl<'a> Search<'a> {
     }
 
     /// Get the currently sought term from the provided query path
-    fn term(&self) -> &Ident {
+    fn term(&self) -> &SelectorSegment {
         self.query.part(self.depth)
     }
 
