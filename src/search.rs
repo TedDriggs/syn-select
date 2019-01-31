@@ -1,4 +1,4 @@
-use crate::Selector;
+use crate::{util, Selector};
 use syn::visit::Visit;
 use syn::{
     self, Attribute, Ident, Item, ItemConst, ItemFn, ItemTrait, ItemType, Stmt, TraitItem,
@@ -34,27 +34,38 @@ trait Attrs {
     /// Get a copy of the `cfg` attributes directly on this item so they can
     /// be added to other items.
     fn cfg_attrs(&self) -> Vec<Attribute> {
-        self.attrs()
-            .map(|attrs| {
-                attrs
-                    .into_iter()
-                    .filter_map(|attr| {
-                        if attr.path == syn::parse_str("cfg").ok()? {
-                            Some(attr.clone())
-                        } else {
-                            None
-                        }
-                    })
-                    .collect()
-            })
-            .unwrap_or_default()
+        if let Some(attrs) = self.attrs() {
+            let cfg_path = util::syn_path("cfg");
+            attrs
+                .into_iter()
+                .filter(|attr| attr.path == cfg_path)
+                .cloned()
+                .collect()
+        } else {
+            Vec::new()
+        }
     }
 
     /// Modify this instance by adding the specified attributes. It is acceptable
     /// to do nothing in this function if there is no way to apply those attributes
     fn add_attrs(&mut self, attrs: Vec<Attribute>) {
         if let Some(own_attrs) = self.attrs_mut() {
-            own_attrs.extend(attrs);
+            let doc_path = util::syn_path("doc");
+
+            // Find the index _after_ the last doc attribute to use to insert the
+            // added attributes. This preserves rustfmt's guideline that docs should
+            // come first if the input element also adheres to that guideline.
+            let idx = own_attrs
+                .iter()
+                .position(|attr| attr.path != doc_path)
+                .unwrap_or_default();
+
+            // Insert the attributes in reverse order so that we don't have
+            // to increment `idx` to preserve their original order in `self` once
+            // we're done.
+            for attr in attrs.into_iter().rev() {
+                own_attrs.insert(idx, attr);
+            }
         }
     }
 }
