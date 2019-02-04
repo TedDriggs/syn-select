@@ -24,3 +24,19 @@ fn main() {
     dbg!(syn_select::select("a::b::C::d", &src_file).unwrap());
 }
 ```
+
+# Wildcards
+Using `_` as a path segment in a wildcard will match any element in that position.
+For example, in the following:
+
+```rust
+mod imp {
+    struct H;
+}
+
+mod imp2 {
+    struct H;
+}
+```
+
+The selector `_::H` would match both structs named `H`.
