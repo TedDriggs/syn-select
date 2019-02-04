@@ -1,4 +1,3 @@
-use std::error::Error as StdError;
 use std::fmt;
 
 /// An error encountered while parsing or executing a selector.
@@ -24,19 +23,18 @@ impl Error {
     }
 }
 
-impl std::error::Error for Error {
-    fn cause(&self) -> Option<&std::error::Error> {
-        None
-    }
-
-    fn description(&self) -> &str {
-        self.kind.description()
-    }
-}
+impl std::error::Error for Error {}
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.description().fmt(f)
+        match &self.kind {
+            ErrorKind::EmptyPath => f.write_str("Empty path"),
+            ErrorKind::InvalidSegment(segment) => write!(
+                f,
+                "Invalid path segment: `{}` is not an identifier",
+                segment
+            ),
+        }
     }
 }
 
@@ -47,31 +45,4 @@ enum ErrorKind {
     /// The selector parser was passed a non-empty string that had
     /// an invalid part after being split by the path separator.
     InvalidSegment(String),
-}
-
-impl std::error::Error for ErrorKind {
-    fn cause(&self) -> Option<&std::error::Error> {
-        None
-    }
-
-    fn description(&self) -> &str {
-        match self {
-            ErrorKind::EmptyPath => "Empty path",
-            ErrorKind::InvalidSegment(_) => "Invalid path segment",
-        }
-    }
-}
-
-impl fmt::Display for ErrorKind {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            ErrorKind::EmptyPath => self.description().fmt(f),
-            ErrorKind::InvalidSegment(segment) => write!(
-                f,
-                "{}: `{}` is not an identifier",
-                self.description(),
-                segment
-            ),
-        }
-    }
 }
