@@ -9,7 +9,7 @@ use syn::{Ident, Item};
 /// The path provided by the user to search for.
 ///
 /// Not all Rust paths are valid selectors; UFCS and generics are not supported.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Selector {
     segments: Vec<SelectorSegment>,
 }
@@ -21,7 +21,7 @@ impl Selector {
     /// ```rust,edition2018
     /// use syn_select::Selector;
     /// let selector = Selector::try_from("hello::world").unwrap();
-    /// assert_eq!(format!("{:?}", selector), "hello::world".to_owned());
+    /// assert_eq!(format!("{}", selector), "hello::world".to_owned());
     /// ```
     pub fn try_from(s: impl AsRef<str>) -> Result<Self, Error> {
         s.as_ref().parse()
@@ -43,7 +43,7 @@ impl Selector {
     }
 }
 
-impl fmt::Debug for Selector {
+impl fmt::Display for Selector {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.segments[0])?;
         for segment in self.segments.iter().skip(1) {
@@ -76,7 +76,7 @@ impl FromStr for Selector {
 }
 
 /// One segment of a selector path
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub(crate) enum SelectorSegment {
     /// A specific ident that must be exactly equal to match.
     Ident(Ident),

@@ -1,3 +1,6 @@
+# v0.1.4 (February 11, 2019)
+* Change `Debug` and `Display` impls for Selector [#5](https://github.com/TedDriggs/issues/5)
+
 # v0.1.3 (February 4, 2019)
 * Add single-term wildcard support [#1](https://github.com/TedDriggs/syn-select/issues/1)
 
