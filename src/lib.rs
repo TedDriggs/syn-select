@@ -23,8 +23,8 @@ mod search;
 mod selector;
 mod util;
 
-pub use error::Error;
-pub use selector::Selector;
+pub use self::error::Error;
+pub use self::selector::Selector;
 
 /// Parse a path, then search a file for all results that exactly match the specified
 /// path.
