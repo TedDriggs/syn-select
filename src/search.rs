@@ -239,7 +239,6 @@ fn contents_of_item(item: &Item) -> Vec<Item> {
         },
         Item::ForeignMod(_) => Vec::new(),
         Item::Type(_) => Vec::new(),
-        Item::Existential(_) => Vec::new(),
         Item::Struct(_) => Vec::new(),
         Item::Enum(_) => Vec::new(),
         Item::Union(_) => Vec::new(),
@@ -254,6 +253,7 @@ fn contents_of_item(item: &Item) -> Vec<Item> {
         Item::Macro(_) => Vec::new(),
         Item::Macro2(_) => Vec::new(),
         Item::Verbatim(_) => Vec::new(),
+        _ => Vec::new(),
     }
 }
 
@@ -267,11 +267,10 @@ impl Name for Item {
             Item::Use(_) => None,
             Item::Static(item) => Some(&item.ident),
             Item::Const(item) => Some(&item.ident),
-            Item::Fn(item) => Some(&item.ident),
+            Item::Fn(item) => Some(&item.sig.ident),
             Item::Mod(item) => Some(&item.ident),
             Item::ForeignMod(_) => None,
             Item::Type(item) => Some(&item.ident),
-            Item::Existential(item) => Some(&item.ident),
             Item::Struct(item) => Some(&item.ident),
             Item::Enum(item) => Some(&item.ident),
             Item::Union(item) => Some(&item.ident),
@@ -281,6 +280,7 @@ impl Name for Item {
             Item::Macro(item) => item.ident.as_ref(),
             Item::Macro2(item) => Some(&item.ident),
             Item::Verbatim(_) => None,
+            _ => None,
         }
     }
 }
@@ -296,7 +296,6 @@ impl Attrs for Item {
             Item::Mod(item) => Some(&item.attrs),
             Item::ForeignMod(_) => None,
             Item::Type(item) => Some(&item.attrs),
-            Item::Existential(item) => Some(&item.attrs),
             Item::Struct(item) => Some(&item.attrs),
             Item::Enum(item) => Some(&item.attrs),
             Item::Union(item) => Some(&item.attrs),
@@ -306,6 +305,7 @@ impl Attrs for Item {
             Item::Macro(item) => Some(&item.attrs),
             Item::Macro2(item) => Some(&item.attrs),
             Item::Verbatim(_) => None,
+            _ => None,
         }
     }
 
@@ -319,7 +319,6 @@ impl Attrs for Item {
             Item::Mod(item) => Some(&mut item.attrs),
             Item::ForeignMod(_) => None,
             Item::Type(item) => Some(&mut item.attrs),
-            Item::Existential(item) => Some(&mut item.attrs),
             Item::Struct(item) => Some(&mut item.attrs),
             Item::Enum(item) => Some(&mut item.attrs),
             Item::Union(item) => Some(&mut item.attrs),
@@ -329,6 +328,7 @@ impl Attrs for Item {
             Item::Macro(item) => Some(&mut item.attrs),
             Item::Macro2(item) => Some(&mut item.attrs),
             Item::Verbatim(_) => None,
+            _ => None,
         }
     }
 }
@@ -341,6 +341,7 @@ impl Name for TraitItem {
             TraitItem::Type(item) => Some(&item.ident),
             TraitItem::Macro(_) => None,
             TraitItem::Verbatim(_) => None,
+            _ => None,
         }
     }
 }
@@ -362,12 +363,7 @@ impl TryToItem for TraitItem {
             TraitItem::Method(item) => Some(Item::Fn(ItemFn {
                 attrs: item.attrs,
                 vis: Visibility::Inherited,
-                constness: item.sig.constness,
-                unsafety: item.sig.unsafety,
-                asyncness: item.sig.asyncness,
-                abi: item.sig.abi,
-                ident: item.sig.ident,
-                decl: Box::new(item.sig.decl),
+                sig: item.sig,
                 block: Box::new(item.default?),
             })),
             TraitItem::Type(item) => Some(Item::Type(ItemType {
@@ -382,6 +378,7 @@ impl TryToItem for TraitItem {
             })),
             TraitItem::Macro(_) => None,
             TraitItem::Verbatim(_) => None,
+            _ => None,
         }
     }
 }
