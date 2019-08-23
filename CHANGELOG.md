@@ -1,3 +1,6 @@
+# v0.2.0 (August 23, 2019)
+* Update to `syn` 1.0.0 [#8](https://github.com/TedDriggs/syn-select/pull/8)
+
 # v0.1.4 (February 11, 2019)
 * Change `Debug` and `Display` impls for Selector [#5](https://github.com/TedDriggs/issues/5)
 
