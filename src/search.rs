@@ -1,5 +1,5 @@
-use crate::{util, Selector};
 use crate::selector::SelectorSegment;
+use crate::{util, Selector};
 use syn::visit::Visit;
 use syn::{
     self, Attribute, Ident, Item, ItemConst, ItemFn, ItemTrait, ItemType, Stmt, TraitItem,
