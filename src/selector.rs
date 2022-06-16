@@ -79,7 +79,7 @@ impl FromStr for Selector {
 #[derive(Debug, Clone)]
 pub(crate) enum SelectorSegment {
     /// A specific ident that must be exactly equal to match.
-    Ident(Ident),
+    Ident(String),
     /// A wildcard that matches any ident.
     Wildcard,
 }
@@ -92,8 +92,8 @@ impl FromStr for SelectorSegment {
             return Ok(SelectorSegment::Wildcard);
         }
 
-        syn::parse_str(input)
-            .map(SelectorSegment::Ident)
+        syn::parse_str::<Ident>(input)
+            .map(|ident| SelectorSegment::Ident(ident.to_string()))
             .map_err(|_| Error::invalid_segment(input.into()))
     }
 }
@@ -102,7 +102,7 @@ impl PartialEq<Ident> for SelectorSegment {
     fn eq(&self, other: &Ident) -> bool {
         match self {
             SelectorSegment::Wildcard => true,
-            SelectorSegment::Ident(ident) => ident == other,
+            SelectorSegment::Ident(ident) => other == ident,
         }
     }
 }

@@ -42,7 +42,7 @@ pub fn select(path: &str, file: &syn::File) -> Result<Vec<Item>, Error> {
 mod tests {
     use syn::Item;
 
-    use super::{select, util};
+    use super::{select, util, Selector};
 
     fn sample() -> syn::File {
         syn::parse_str(
@@ -88,6 +88,14 @@ mod tests {
 
     fn ident(ident: &str) -> syn::Ident {
         syn::parse_str::<syn::Ident>(ident).unwrap()
+    }
+
+    #[test]
+    fn autotraits() {
+        fn assert_send<T: Send>() {}
+        fn assert_sync<T: Sync>() {}
+        assert_send::<Selector>();
+        assert_sync::<Selector>();
     }
 
     #[test]
