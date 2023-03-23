@@ -21,7 +21,6 @@ use syn::Item;
 mod error;
 mod search;
 mod selector;
-mod util;
 
 pub use self::error::Error;
 pub use self::selector::Selector;
@@ -42,7 +41,7 @@ pub fn select(path: &str, file: &syn::File) -> Result<Vec<Item>, Error> {
 mod tests {
     use syn::Item;
 
-    use super::{select, util, Selector};
+    use super::{select, Selector};
 
     fn sample() -> syn::File {
         syn::parse_str(
@@ -129,7 +128,7 @@ mod tests {
         assert_eq!(result.len(), 1);
         if let Item::Trait(item) = &result[0] {
             assert_eq!(item.items.len(), 1);
-            if let syn::TraitItem::Method(item) = &item.items[0] {
+            if let syn::TraitItem::Fn(item) = &item.items[0] {
                 assert_eq!(item.sig.ident, ident("f"));
             }
         }
@@ -149,17 +148,17 @@ mod tests {
         assert_eq!(result.len(), 2);
         if let Item::Struct(item) = &result[0] {
             assert_eq!(item.attrs.len(), 4);
-            assert_eq!(item.attrs[0].path, util::syn_path("doc"));
-            assert_eq!(item.attrs[1].path, util::syn_path("cfg"));
-            assert_eq!(item.attrs[2].path, util::syn_path("serde"));
-            assert_eq!(item.attrs[3].path, util::syn_path("cfg"));
+            assert!(item.attrs[0].path.is_ident("doc"));
+            assert!(item.attrs[1].path.is_ident("cfg"));
+            assert!(item.attrs[2].path.is_ident("serde"));
+            assert!(item.attrs[3].path.is_ident("cfg"));
         } else {
             panic!("First result should be struct");
         }
 
         if let Item::Struct(item) = &result[1] {
             assert_eq!(item.attrs.len(), 1);
-            assert_eq!(item.attrs[0].path, util::syn_path("cfg"));
+            assert!(item.attrs[0].path.is_ident("cfg"));
         } else {
             panic!("Second result should be struct");
         }
