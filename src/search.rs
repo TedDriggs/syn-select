@@ -1,5 +1,5 @@
 use crate::selector::SelectorSegment;
-use crate::{util, Selector};
+use crate::Selector;
 use syn::visit::Visit;
 use syn::{
     self, Attribute, Ident, Item, ItemConst, ItemFn, ItemTrait, ItemType, Stmt, TraitItem,
@@ -36,10 +36,9 @@ trait Attrs {
     /// be added to other items.
     fn cfg_attrs(&self) -> Vec<Attribute> {
         if let Some(attrs) = self.attrs() {
-            let cfg_path = util::syn_path("cfg");
             attrs
                 .into_iter()
-                .filter(|attr| attr.path == cfg_path)
+                .filter(|attr| attr.path().is_ident("cfg"))
                 .cloned()
                 .collect()
         } else {
@@ -51,14 +50,12 @@ trait Attrs {
     /// to do nothing in this function if there is no way to apply those attributes
     fn add_attrs(&mut self, attrs: Vec<Attribute>) {
         if let Some(own_attrs) = self.attrs_mut() {
-            let doc_path = util::syn_path("doc");
-
             // Find the index _after_ the last doc attribute to use to insert the
             // added attributes. This preserves rustfmt's guideline that docs should
             // come first if the input element also adheres to that guideline.
             let idx = own_attrs
                 .iter()
-                .position(|attr| attr.path != doc_path)
+                .position(|attr| !attr.path().is_ident("doc"))
                 .unwrap_or_default();
 
             // Insert the attributes in reverse order so that we don't have
@@ -71,7 +68,6 @@ trait Attrs {
     }
 }
 
-#[derive(Debug)]
 pub(crate) struct Search<'a> {
     query: &'a Selector,
     depth: usize,
@@ -251,7 +247,6 @@ fn contents_of_item(item: &Item) -> Vec<Item> {
         Item::TraitAlias(_) => Vec::new(),
         Item::Impl(_) => Vec::new(),
         Item::Macro(_) => Vec::new(),
-        Item::Macro2(_) => Vec::new(),
         Item::Verbatim(_) => Vec::new(),
         _ => Vec::new(),
     }
@@ -278,7 +273,6 @@ impl Name for Item {
             Item::TraitAlias(item) => Some(&item.ident),
             Item::Impl(_) => None,
             Item::Macro(item) => item.ident.as_ref(),
-            Item::Macro2(item) => Some(&item.ident),
             Item::Verbatim(_) => None,
             _ => None,
         }
@@ -303,7 +297,6 @@ impl Attrs for Item {
             Item::TraitAlias(item) => Some(&item.attrs),
             Item::Impl(_) => None,
             Item::Macro(item) => Some(&item.attrs),
-            Item::Macro2(item) => Some(&item.attrs),
             Item::Verbatim(_) => None,
             _ => None,
         }
@@ -326,7 +319,6 @@ impl Attrs for Item {
             Item::TraitAlias(item) => Some(&mut item.attrs),
             Item::Impl(_) => None,
             Item::Macro(item) => Some(&mut item.attrs),
-            Item::Macro2(item) => Some(&mut item.attrs),
             Item::Verbatim(_) => None,
             _ => None,
         }
@@ -336,7 +328,7 @@ impl Attrs for Item {
 impl Name for TraitItem {
     fn name(&self) -> Option<&Ident> {
         match self {
-            TraitItem::Method(item) => Some(&item.sig.ident),
+            TraitItem::Fn(item) => Some(&item.sig.ident),
             TraitItem::Const(item) => Some(&item.ident),
             TraitItem::Type(item) => Some(&item.ident),
             TraitItem::Macro(_) => None,
@@ -354,13 +346,14 @@ impl TryToItem for TraitItem {
                 vis: Visibility::Inherited,
                 const_token: item.const_token,
                 ident: item.ident,
+                generics: item.generics,
                 colon_token: item.colon_token,
                 ty: Box::new(item.ty),
                 eq_token: item.default.as_ref()?.0,
                 expr: Box::new(item.default?.1),
                 semi_token: item.semi_token,
             })),
-            TraitItem::Method(item) => Some(Item::Fn(ItemFn {
+            TraitItem::Fn(item) => Some(Item::Fn(ItemFn {
                 attrs: item.attrs,
                 vis: Visibility::Inherited,
                 sig: item.sig,
