@@ -1,3 +1,6 @@
+v 0.3.0 (May 22, 2023)
+* Update syn to v2
+
 # v0.2.1 (June 15, 2022)
 * Make syn_select::Selector implement Send and Sync (#9) 
 
