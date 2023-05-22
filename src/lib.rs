@@ -104,7 +104,7 @@ mod tests {
         if let Item::Trait(item) = &result[0] {
             assert_eq!(item.ident, ident("C"));
         } else {
-            panic!("Result was wrong type {:?}", &result[0]);
+            panic!("Result was wrong type");
         }
     }
 
@@ -115,7 +115,7 @@ mod tests {
         if let Item::Struct(item) = &result[0] {
             assert_eq!(item.ident, ident("E"));
         } else {
-            panic!("Result was wrong type {:?}", &result[0]);
+            panic!("Result was wrong type");
         }
     }
 
@@ -148,17 +148,17 @@ mod tests {
         assert_eq!(result.len(), 2);
         if let Item::Struct(item) = &result[0] {
             assert_eq!(item.attrs.len(), 4);
-            assert!(item.attrs[0].path.is_ident("doc"));
-            assert!(item.attrs[1].path.is_ident("cfg"));
-            assert!(item.attrs[2].path.is_ident("serde"));
-            assert!(item.attrs[3].path.is_ident("cfg"));
+            assert!(item.attrs[0].path().is_ident("doc"));
+            assert!(item.attrs[1].path().is_ident("cfg"));
+            assert!(item.attrs[2].path().is_ident("serde"));
+            assert!(item.attrs[3].path().is_ident("cfg"));
         } else {
             panic!("First result should be struct");
         }
 
         if let Item::Struct(item) = &result[1] {
             assert_eq!(item.attrs.len(), 1);
-            assert!(item.attrs[0].path.is_ident("cfg"));
+            assert!(item.attrs[0].path().is_ident("cfg"));
         } else {
             panic!("Second result should be struct");
         }
